@@ -1,8 +1,11 @@
 import Foundation
 import Combine
+import Factory
 
 @MainActor
 final class AuthViewModel: ObservableObject, ErrorDisplayable {
+
+    @Injected(\.authStore) private var authStore
 
     @Published var authType: AuthType = .signIn
     @Published var email: String = ""
@@ -24,9 +27,20 @@ final class AuthViewModel: ObservableObject, ErrorDisplayable {
         Task(handlingError: self) {
             self.isLoading = true
             defer { self.isLoading = false }
-            // TODO: integrate with your auth backend (Firebase, Supabase, custom API, etc.)
-            // On success, update AppStartingViewModel.appState to .home
-            throw AppError.unknown
+            switch self.authType {
+            case .signIn:
+                _ = try await self.authStore.signIn(email: self.email, password: self.password)
+            case .signUp:
+                _ = try await self.authStore.signUp(email: self.email, password: self.password, displayName: self.displayName)
+            }
+        }
+    }
+
+    func signInWithGoogle() {
+        Task(handlingError: self) {
+            self.isLoading = true
+            defer { self.isLoading = false }
+            _ = try await self.authStore.signInWithGoogle()
         }
     }
 }

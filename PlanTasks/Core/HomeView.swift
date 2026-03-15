@@ -7,7 +7,6 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             filterView
-//                .task { await loadData() }
 
             // Відкриті вю
             if viewModel.showAddTask {
@@ -36,10 +35,12 @@ struct HomeView: View {
         .navigationTitle("PlanTasks")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: viewModel.showAddItem) {
-                    Image(systemName: "plus")
+                NavigationLink(destination: ProfileView()) {
+                    Image(systemName: "person.circle")
+                        .font(.title3)
                 }
             }
+
         }
     }
 }

@@ -6,7 +6,6 @@ import Factory
 final class HomeViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable {
 
     @Published var users: [User] = []
-    @Published var isAddingItem: Bool = false
     @Published var error: Error?
     @Published var alert: AppAlert?
     
@@ -34,9 +33,7 @@ final class HomeViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable 
         }
     }
 
-    func showAddItem() {
-        isAddingItem = true
-    }
+
 
     func deleteUsers(at offsets: IndexSet) {
         let itemsToDelete = offsets.map { index in self.users[index] }

@@ -51,6 +51,33 @@ struct AuthView: View {
                 .padding(.horizontal)
                 .disabled(viewModel.isLoading || !viewModel.isFormValid)
 
+                HStack {
+                    Rectangle().frame(height: 1).foregroundStyle(Color.appTheme.divider)
+                    Text("or").font(.subheadline).foregroundStyle(Color.appTheme.secondaryText)
+                    Rectangle().frame(height: 1).foregroundStyle(Color.appTheme.divider)
+                }
+                .padding(.horizontal)
+
+                Button(action: viewModel.signInWithGoogle) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 18, weight: .medium))
+                        Text("Continue with Google")
+                            .fontWeight(.medium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.appTheme.cellBackground)
+                    .foregroundStyle(Color.appTheme.text)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.appTheme.divider, lineWidth: 1)
+                    )
+                }
+                .padding(.horizontal)
+                .disabled(viewModel.isLoading)
+
                 Button(action: viewModel.toggleAuthType) {
                     Text(viewModel.authType == .signIn
                          ? "Don't have an account? Sign Up"
