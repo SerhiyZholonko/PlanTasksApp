@@ -5,6 +5,32 @@ import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
 
+// MARK: - reCAPTCHA UI delegate (fallback when APNs unavailable)
+
+private final class PhoneAuthUIDelegate: NSObject, AuthUIDelegate {
+    func present(_ viewControllerToPresent: UIViewController, animated: Bool, completion: (() -> Void)?) {
+        topViewController()?.present(viewControllerToPresent, animated: animated, completion: completion)
+    }
+
+    func dismiss(animated: Bool, completion: (() -> Void)?) {
+        topViewController()?.dismiss(animated: animated, completion: completion)
+    }
+
+    private func topViewController() -> UIViewController? {
+        guard let rootVC = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?.rootViewController else { return nil }
+        var top = rootVC
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        return top
+    }
+}
+
+// MARK: - FirebaseAuthStore
+
 @MainActor
 final class FirebaseAuthStore: AuthStoreProtocol {
 
@@ -15,6 +41,7 @@ final class FirebaseAuthStore: AuthStoreProtocol {
     }
 
     private var authStateHandle: AuthStateDidChangeListenerHandle?
+    private let phoneUIDelegate = PhoneAuthUIDelegate()
 
     init() {
         authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
@@ -66,6 +93,45 @@ final class FirebaseAuthStore: AuthStoreProtocol {
         let credential = GoogleAuthProvider.credential(
             withIDToken: idToken,
             accessToken: result.user.accessToken.tokenString
+        )
+        let authResult = try await Auth.auth().signIn(with: credential)
+        return AppUser(
+            id: authResult.user.uid,
+            email: authResult.user.email ?? "",
+            displayName: authResult.user.displayName
+        )
+    }
+
+    func sendPhoneVerification(phoneNumber: String) async throws -> String {
+        do {
+            let id = try await PhoneAuthProvider.provider().verifyPhoneNumber(phoneNumber, uiDelegate: phoneUIDelegate)
+            print("✅ Phone verification sent, ID: \(id)")
+            return id
+        } catch {
+            print("❌ Phone verification error: \(error)")
+            print("❌ Error details: \((error as NSError).userInfo)")
+            throw error
+        }
+    }
+
+    func signInWithPhone(verificationID: String, code: String) async throws -> AppUser {
+        let credential = PhoneAuthProvider.provider().credential(
+            withVerificationID: verificationID,
+            verificationCode: code
+        )
+        let authResult = try await Auth.auth().signIn(with: credential)
+        return AppUser(
+            id: authResult.user.uid,
+            email: authResult.user.email ?? "",
+            displayName: authResult.user.displayName
+        )
+    }
+
+    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?) async throws -> AppUser {
+        let credential = OAuthProvider.appleCredential(
+            withIDToken: idToken,
+            rawNonce: rawNonce,
+            fullName: fullName
         )
         let authResult = try await Auth.auth().signIn(with: credential)
         return AppUser(

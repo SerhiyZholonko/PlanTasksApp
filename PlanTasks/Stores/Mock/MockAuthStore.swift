@@ -28,6 +28,23 @@ final class MockAuthStore: AuthStoreProtocol {
         return user
     }
 
+    func sendPhoneVerification(phoneNumber: String) async throws -> String {
+        return "mock-verification-id"
+    }
+
+    func signInWithPhone(verificationID: String, code: String) async throws -> AppUser {
+        let user = AppUser(id: UUID().uuidString, email: "", displayName: "Phone User")
+        currentUser = user
+        return user
+    }
+
+    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?) async throws -> AppUser {
+        let name = [fullName?.givenName, fullName?.familyName].compactMap { $0 }.joined(separator: " ")
+        let user = AppUser(id: UUID().uuidString, email: "apple@mock.com", displayName: name.isEmpty ? "Apple User" : name)
+        currentUser = user
+        return user
+    }
+
     func signOut() throws {
         currentUser = nil
     }

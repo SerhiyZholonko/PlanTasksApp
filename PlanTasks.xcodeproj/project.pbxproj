@@ -22,7 +22,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		18D01CE02F66D73E008FF10D /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		18D01CE02F66D73E008FF10D /* Exceptions for "PlanTasks" folder in "PlanTasks" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -35,7 +35,7 @@
 		18E992D82F6161BC006226DB /* PlanTasks */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				18D01CE02F66D73E008FF10D /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				18D01CE02F66D73E008FF10D /* Exceptions for "PlanTasks" folder in "PlanTasks" target */,
 			);
 			path = PlanTasks;
 			sourceTree = "<group>";
@@ -296,6 +296,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PlanTasks/PlanTasks.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4BBUSC332Y;
@@ -329,6 +330,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PlanTasks/PlanTasks.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4BBUSC332Y;
