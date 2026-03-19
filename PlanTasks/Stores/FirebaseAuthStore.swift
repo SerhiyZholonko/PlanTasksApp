@@ -3,6 +3,7 @@ import Combine
 import UIKit
 import FirebaseCore
 import FirebaseAuth
+import FirebaseFirestore
 import GoogleSignIn
 
 // MARK: - reCAPTCHA UI delegate (fallback when APNs unavailable)
@@ -82,6 +83,7 @@ final class FirebaseAuthStore: AuthStoreProtocol {
             accessToken: result.user.accessToken.tokenString
         )
         let authResult = try await Auth.auth().signIn(with: credential)
+        try await saveRegisteredUser(authResult.user)
         return AppUser(
             id: authResult.user.uid,
             email: authResult.user.email ?? "",
@@ -107,6 +109,7 @@ final class FirebaseAuthStore: AuthStoreProtocol {
             verificationCode: code
         )
         let authResult = try await Auth.auth().signIn(with: credential)
+        try await saveRegisteredUser(authResult.user)
         return AppUser(
             id: authResult.user.uid,
             email: authResult.user.email ?? "",
@@ -122,6 +125,7 @@ final class FirebaseAuthStore: AuthStoreProtocol {
             fullName: fullName
         )
         let authResult = try await Auth.auth().signIn(with: credential)
+        try await saveRegisteredUser(authResult.user)
         return AppUser(
             id: authResult.user.uid,
             email: authResult.user.email ?? "",
@@ -135,6 +139,33 @@ final class FirebaseAuthStore: AuthStoreProtocol {
         request.displayName = name
         try await request.commitChanges()
         currentUser = AppUser(id: user.uid, email: user.email ?? "", displayName: name, phoneNumber: user.phoneNumber)
+        try await saveRegisteredUser(user, displayName: name)
+    }
+
+    // MARK: - Firestore profile registry
+
+    private func saveRegisteredUser(_ firebaseUser: FirebaseAuth.User, displayName: String? = nil) async throws {
+        let name = displayName ?? firebaseUser.displayName ?? firebaseUser.email ?? firebaseUser.phoneNumber ?? "Користувач"
+        let initials = makeInitials(from: name)
+        let data: [String: Any] = [
+            "id": firebaseUser.uid,
+            "name": name,
+            "email": firebaseUser.email ?? "",
+            "phoneNumber": firebaseUser.phoneNumber ?? "",
+            "avatarInitials": initials
+        ]
+        try await Firestore.firestore()
+            .collection("registeredUsers")
+            .document(firebaseUser.uid)
+            .setData(data, merge: true)
+    }
+
+    private func makeInitials(from name: String) -> String {
+        let parts = name.split(separator: " ")
+        if parts.count >= 2 {
+            return "\(parts[0].prefix(1))\(parts[1].prefix(1))".uppercased()
+        }
+        return String(name.prefix(2)).uppercased()
     }
 
     func signOut() throws {

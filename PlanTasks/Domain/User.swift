@@ -9,17 +9,18 @@
 import SwiftUI
 
 struct User: Identifiable, Codable, Equatable, Hashable {
-    let id: UUID
+    let id: String
     let name: String
     let email: String
+    let phoneNumber: String
     let avatarInitials: String
 }
 extension User {
     static let mockUsers: [User] = [
-        User(id: UUID(), name: "Олексій Коваль", email: "oleksiy@mail.com", avatarInitials: "ОК"),
-        User(id: UUID(), name: "Марія Шевченко", email: "maria@mail.com", avatarInitials: "МШ"),
-        User(id: UUID(), name: "Іван Петренко", email: "ivan@mail.com", avatarInitials: "ІП"),
-        User(id: UUID(), name: "Наталія Бондар", email: "natalia@mail.com", avatarInitials: "НБ"),
-        User(id: UUID(), name: "Дмитро Лисенко", email: "dmytro@mail.com", avatarInitials: "ДЛ"),
+        User(id: UUID().uuidString, name: "Олексій Коваль", email: "oleksiy@mail.com", phoneNumber: "", avatarInitials: "ОК"),
+        User(id: UUID().uuidString, name: "Марія Шевченко", email: "maria@mail.com", phoneNumber: "", avatarInitials: "МШ"),
+        User(id: UUID().uuidString, name: "Іван Петренко", email: "ivan@mail.com", phoneNumber: "", avatarInitials: "ІП"),
+        User(id: UUID().uuidString, name: "Наталія Бондар", email: "natalia@mail.com", phoneNumber: "", avatarInitials: "НБ"),
+        User(id: UUID().uuidString, name: "Дмитро Лисенко", email: "dmytro@mail.com", phoneNumber: "", avatarInitials: "ДЛ"),
     ]
 }

@@ -5,11 +5,11 @@ final class MockDataStore: DataStoreProtocol {
 
     // Глобальний реєстр усіх зареєстрованих користувачів (імітує Firestore users/)
     private let allRegisteredUsers: [User] = User.mockUsers + [
-        User(id: UUID(), name: "Андрій Мороз", email: "andriy@mail.com", avatarInitials: "АМ"),
-        User(id: UUID(), name: "Оксана Гриценко", email: "oksana@mail.com", avatarInitials: "ОГ"),
-        User(id: UUID(), name: "Тарас Кравченко", email: "taras@mail.com", avatarInitials: "ТК"),
-        User(id: UUID(), name: "Юлія Савченко", email: "yulia@mail.com", avatarInitials: "ЮС"),
-        User(id: UUID(), name: "Богдан Руденко", email: "bohdan@mail.com", avatarInitials: "БР"),
+        User(id: UUID().uuidString, name: "Андрій Мороз", email: "andriy@mail.com", phoneNumber: "", avatarInitials: "АМ"),
+        User(id: UUID().uuidString, name: "Оксана Гриценко", email: "oksana@mail.com", phoneNumber: "", avatarInitials: "ОГ"),
+        User(id: UUID().uuidString, name: "Тарас Кравченко", email: "taras@mail.com", phoneNumber: "", avatarInitials: "ТК"),
+        User(id: UUID().uuidString, name: "Юлія Савченко", email: "yulia@mail.com", phoneNumber: "", avatarInitials: "ЮС"),
+        User(id: UUID().uuidString, name: "Богдан Руденко", email: "bohdan@mail.com", phoneNumber: "", avatarInitials: "БР"),
     ]
 
     var mockUsers: [User] = User.mockUsers

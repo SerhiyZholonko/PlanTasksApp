@@ -58,6 +58,21 @@ All semantic colors are defined in `Colors.xcassets` and accessed via `Color.app
 
 `MockAuthStore` stubs all methods for SwiftUI Previews.
 
-## Firebase / Data Status
+## Firestore Structure
 
-`FirebaseApp.configure()` is called in `AppDelegate`. `GoogleService-Info.plist` is present. Auth is fully implemented. Firestore is imported but **not yet used** — Tasks and Users are backed by `MockDataStore`. The next step is implementing a `FirebaseDataStore` (replacing `MockDataStore`) and wiring up Firestore CRUD for `User` and `PTask`.
+```
+registeredUsers/{uid}          ← written on every sign-in; used for employee search
+  id, name, email, phoneNumber, avatarInitials
+
+users/{uid}/employees/{empId}  ← current user's added employees
+  id, name, email, phoneNumber, avatarInitials
+```
+
+`FirebaseDataStore` (active via DI) implements `DataStoreProtocol`:
+- `getAllUsers()` / `addUser` / `deleteUser` → `users/{uid}/employees` subcollection
+- `searchRegisteredUsers(query:)` → loads all `registeredUsers/`, filters client-side, excludes self and already-added
+- Tasks remain in-memory (Firestore tasks wiring TBD)
+
+`FirebaseAuthStore.saveRegisteredUser(_:)` is called after every successful sign-in (Google, Apple, Phone) and after `updateDisplayName` — keeps `registeredUsers/{uid}` up to date.
+
+`User.id` is a `String` (Firebase UID). `MockDataStore` uses `UUID().uuidString` for previews/tests.
