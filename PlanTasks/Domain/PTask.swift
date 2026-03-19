@@ -1,27 +1,19 @@
-//
-//  PTask.swift
-//  PlanTasks
-//
-//  Created by apple on 12.03.2026.
-//
+import Foundation
 
-
-import SwiftUI
-
-struct PTask: Identifiable {
-    let id: UUID
+struct PTask: Identifiable, Codable, Equatable {
+    let id: String
     let title: String
-    let redLineDate: Date
-    var isCompleted: Bool = false
-    let employee: User
-    
+    let deadline: Date
+    var isCompleted: Bool
+    let employees: [User]
 }
+
 extension PTask {
     static let mockProducts: [PTask] = [
-        PTask(id: UUID(), title: "MacBook Pro 16\"", redLineDate: Date().addingTimeInterval(60*60*24*3), employee: User.mockUsers.first!),
-        PTask(id: UUID(), title: "iPhone 15 Pro", redLineDate: Date().addingTimeInterval(60*60*24*7), employee: User.mockUsers[1]),
-        PTask(id: UUID(), title: "AirPods Pro", redLineDate: Date().addingTimeInterval(60*60*24*10), employee: User.mockUsers[2]),
-        PTask(id: UUID(), title: "iPad Air", redLineDate: Date().addingTimeInterval(60*60*24*14), employee: User.mockUsers[3]),
-        PTask(id: UUID(), title: "Apple Watch Ultra", redLineDate: Date().addingTimeInterval(60*60*24*21), employee: User.mockUsers[4]),
+        PTask(id: UUID().uuidString, title: "Оновити документацію", deadline: Date().addingTimeInterval(60*60*24*3), isCompleted: false, employees: [User.mockUsers[0], User.mockUsers[1]]),
+        PTask(id: UUID().uuidString, title: "Провести код-рев'ю", deadline: Date().addingTimeInterval(60*60*24*7), isCompleted: false, employees: [User.mockUsers[1]]),
+        PTask(id: UUID().uuidString, title: "Налаштувати CI/CD", deadline: Date().addingTimeInterval(60*60*24*10), isCompleted: true, employees: [User.mockUsers[2], User.mockUsers[3]]),
+        PTask(id: UUID().uuidString, title: "Підготувати презентацію", deadline: Date().addingTimeInterval(60*60*24*14), isCompleted: false, employees: [User.mockUsers[4]]),
+        PTask(id: UUID().uuidString, title: "Тестування API", deadline: Date().addingTimeInterval(60*60*24*2), isCompleted: false, employees: User.mockUsers),
     ]
 }

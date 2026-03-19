@@ -5,6 +5,7 @@ struct ProfileView: View {
 
     var body: some View {
         List {
+            // User info section
             Section {
                 HStack(spacing: 16) {
                     Circle()
@@ -18,8 +19,7 @@ struct ProfileView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         if let name = viewModel.user?.displayName, !name.isEmpty {
-                            Text(name)
-                                .font(.headline)
+                            Text(name).font(.headline)
                         }
                         Text(viewModel.userIdentifier)
                             .font(.subheadline)
@@ -37,6 +37,19 @@ struct ProfileView: View {
                         Label("Змінити ім'я", systemImage: "pencil")
                     }
                 }
+            }
+
+            // Role section
+            Section(header: Text("Роль")) {
+                Picker("Роль", selection: Binding(
+                    get: { viewModel.user?.role ?? .manager },
+                    set: { viewModel.updateRole($0) }
+                )) {
+                    Label("Керівник", systemImage: "briefcase.fill").tag(UserRole.manager)
+                    Label("Робітник", systemImage: "hammer.fill").tag(UserRole.worker)
+                }
+                .pickerStyle(.segmented)
+                .padding(.vertical, 4)
             }
 
             Section {

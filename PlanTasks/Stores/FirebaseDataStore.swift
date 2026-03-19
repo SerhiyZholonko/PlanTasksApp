@@ -6,9 +6,6 @@ import FirebaseFirestore
 final class FirebaseDataStore: DataStoreProtocol {
 
     private let db = Firestore.firestore()
-    private var tasks: [PTask] = []
-
-    // MARK: - Helpers
 
     private var currentUID: String {
         get throws {
@@ -21,7 +18,7 @@ final class FirebaseDataStore: DataStoreProtocol {
         db.collection("users").document(uid).collection("employees")
     }
 
-    // MARK: - Users (employees of current user)
+    // MARK: - Users (employees)
 
     func getAllUsers() async throws -> [User] {
         let uid = try currentUID
@@ -58,41 +55,92 @@ final class FirebaseDataStore: DataStoreProtocol {
             }
     }
 
-    // MARK: - Tasks (in-memory, Firestore wiring TBD)
+    // MARK: - Tasks (global collection)
 
-    func getAllTasks() async throws -> [PTask] { tasks }
+    func getAllTasks() async throws -> [PTask] {
+        let uid = try currentUID
+        let snapshot = try await db.collection("tasks")
+            .whereField("createdBy", isEqualTo: uid)
+            .getDocuments()
+        return snapshot.documents
+            .compactMap { PTask(document: $0) }
+            .sorted { $0.deadline < $1.deadline }
+    }
+
+    func getAssignedTasks() async throws -> [PTask] {
+        let uid = try currentUID
+        let snapshot = try await db.collection("tasks")
+            .whereField("employeeIds", arrayContains: uid)
+            .getDocuments()
+        return snapshot.documents
+            .compactMap { PTask(document: $0) }
+            .sorted { $0.deadline < $1.deadline }
+    }
 
     func addTask(_ task: PTask) async throws {
-        tasks.append(task)
+        let uid = try currentUID
+        var data = task.firestoreData
+        data["createdBy"] = uid
+        data["employeeIds"] = task.employees.map { $0.id }
+        try await db.collection("tasks").document(task.id).setData(data)
     }
 
     func updateTask(_ task: PTask) async throws {
-        guard let i = tasks.firstIndex(where: { $0.id == task.id }) else { throw AppError.notFound }
-        tasks[i] = task
+        var data = task.firestoreData
+        data["employeeIds"] = task.employees.map { $0.id }
+        try await db.collection("tasks").document(task.id).setData(data, merge: true)
     }
 
     func deleteTask(_ task: PTask) async throws {
-        tasks.removeAll { $0.id == task.id }
+        try await db.collection("tasks").document(task.id).delete()
     }
 }
 
-// MARK: - Firestore mapping
+// MARK: - Firestore mapping: User
 
-private extension User {
+extension User {
     init?(document: QueryDocumentSnapshot) {
         let d = document.data()
-        guard let id = d["id"] as? String,
-              let name = d["name"] as? String else { return nil }
+        guard let id = d["id"] as? String, let name = d["name"] as? String else { return nil }
         self.init(
             id: id,
             name: name,
             email: d["email"] as? String ?? "",
             phoneNumber: d["phoneNumber"] as? String ?? "",
-            avatarInitials: d["avatarInitials"] as? String ?? String(name.prefix(2)).uppercased()
+            avatarInitials: d["avatarInitials"] as? String ?? String(name.prefix(2)).uppercased(),
+            consentGiven: d["consentGiven"] as? Bool ?? false
         )
     }
 
     var firestoreData: [String: Any] {
-        ["id": id, "name": name, "email": email, "phoneNumber": phoneNumber, "avatarInitials": avatarInitials]
+        ["id": id, "name": name, "email": email, "phoneNumber": phoneNumber,
+         "avatarInitials": avatarInitials, "consentGiven": consentGiven]
+    }
+}
+
+// MARK: - Firestore mapping: PTask
+
+extension PTask {
+    init?(document: QueryDocumentSnapshot) {
+        let d = document.data()
+        guard let id = d["id"] as? String,
+              let title = d["title"] as? String,
+              let ts = d["deadline"] as? Timestamp else { return nil }
+        let employeeDicts = d["employees"] as? [[String: Any]] ?? []
+        let employees = employeeDicts.compactMap { dict -> User? in
+            guard let uid = dict["id"] as? String, let name = dict["name"] as? String else { return nil }
+            return User(id: uid, name: name,
+                        email: dict["email"] as? String ?? "",
+                        phoneNumber: dict["phoneNumber"] as? String ?? "",
+                        avatarInitials: dict["avatarInitials"] as? String ?? String(name.prefix(2)).uppercased(),
+                        consentGiven: dict["consentGiven"] as? Bool ?? false)
+        }
+        self.init(id: id, title: title, deadline: ts.dateValue(),
+                  isCompleted: d["isCompleted"] as? Bool ?? false, employees: employees)
+    }
+
+    var firestoreData: [String: Any] {
+        ["id": id, "title": title, "deadline": Timestamp(date: deadline),
+         "isCompleted": isCompleted, "employees": employees.map { $0.firestoreData }]
     }
 }

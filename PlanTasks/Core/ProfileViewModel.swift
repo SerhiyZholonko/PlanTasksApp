@@ -16,6 +16,23 @@ final class ProfileViewModel: ObservableObject, ErrorDisplayable {
             .assign(to: &$user)
     }
 
+    var userIdentifier: String {
+        if let email = user?.email, !email.isEmpty { return email }
+        if let phone = user?.phoneNumber, !phone.isEmpty { return phone }
+        return ""
+    }
+
+    var avatarInitials: String {
+        if let name = user?.displayName, !name.isEmpty {
+            let parts = name.split(separator: " ")
+            if parts.count >= 2 { return "\(parts[0].prefix(1))\(parts[1].prefix(1))".uppercased() }
+            return String(name.prefix(2)).uppercased()
+        }
+        if let email = user?.email, !email.isEmpty { return email.prefix(2).uppercased() }
+        if let phone = user?.phoneNumber, !phone.isEmpty { return String(phone.suffix(2)) }
+        return "?"
+    }
+
     func openNameSheet() {
         editingName = user?.displayName ?? ""
         showNameSheet = true
@@ -30,27 +47,10 @@ final class ProfileViewModel: ObservableObject, ErrorDisplayable {
         }
     }
 
-    var userIdentifier: String {
-        if let email = user?.email, !email.isEmpty { return email }
-        if let phone = user?.phoneNumber, !phone.isEmpty { return phone }
-        return ""
-    }
-
-    var avatarInitials: String {
-        if let name = user?.displayName, !name.isEmpty {
-            let parts = name.split(separator: " ")
-            if parts.count >= 2 {
-                return "\(parts[0].prefix(1))\(parts[1].prefix(1))".uppercased()
-            }
-            return String(name.prefix(2)).uppercased()
+    func updateRole(_ role: UserRole) {
+        Task(handlingError: self) {
+            try await self.authStore.updateRole(role)
         }
-        if let email = user?.email, !email.isEmpty {
-            return email.prefix(2).uppercased()
-        }
-        if let phone = user?.phoneNumber, !phone.isEmpty {
-            return String(phone.suffix(2))
-        }
-        return "?"
     }
 
     func signOut() {

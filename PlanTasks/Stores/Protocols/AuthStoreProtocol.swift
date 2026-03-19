@@ -11,5 +11,7 @@ protocol AuthStoreProtocol: AnyObject {
     func sendPhoneVerification(phoneNumber: String) async throws -> String
     func signInWithPhone(verificationID: String, code: String) async throws -> AppUser
     func updateDisplayName(_ name: String) async throws
+    func updateRole(_ role: UserRole) async throws
+    func grantConsent() async throws
     func signOut() throws
 }

@@ -6,12 +6,17 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            filterView
+            if viewModel.isManager {
+                managerView
+            } else {
+                workerView
+            }
 
-            // Відкриті вю
             if viewModel.showAddTask {
-                AddTaskView(isPresented: $viewModel.showAddTask, namespace: animation)
-                    .zIndex(2)
+                AddTaskView(isPresented: $viewModel.showAddTask, namespace: animation) {
+                    viewModel.loadData()
+                }
+                .zIndex(2)
             }
             if viewModel.showMessage {
                 MessageView(isPresented: $viewModel.showMessage, namespace: animation)
@@ -23,7 +28,7 @@ struct HomeView: View {
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            if !viewModel.showAddTask && !viewModel.showMessage && !viewModel.showSettings {
+            if viewModel.isManager && !viewModel.showAddTask && !viewModel.showMessage && !viewModel.showSettings {
                 ExpandableFABView(
                     namespace: animation,
                     onAddTask: { withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) { viewModel.showAddTask = true } },
@@ -36,17 +41,13 @@ struct HomeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack {
-                    if viewModel.selectedTab == 0 {
-                        Button {
-                            viewModel.showAddEmployee = true
-                        } label: {
-                            Image(systemName: "person.badge.plus")
-                                .font(.title3)
+                    if viewModel.isManager && viewModel.selectedTab == 0 {
+                        Button { viewModel.showAddEmployee = true } label: {
+                            Image(systemName: "person.badge.plus").font(.title3)
                         }
                     }
                     NavigationLink(destination: ProfileView()) {
-                        Image(systemName: "person.circle")
-                            .font(.title3)
+                        Image(systemName: "person.circle").font(.title3)
                     }
                 }
             }
@@ -54,8 +55,10 @@ struct HomeView: View {
     }
 }
 
+// MARK: - Manager view
+
 private extension HomeView {
-    var filterView: some View {
+    var managerView: some View {
         VStack {
             Picker("", selection: $viewModel.selectedTab) {
                 Text("Співробітники").tag(0)
@@ -66,15 +69,11 @@ private extension HomeView {
 
             List {
                 if viewModel.isLoading {
-                    ForEach(0..<5, id: \.self) { _ in
-                        SkeletonCell()
-                    }
-                    .listRowSeparator(.hidden)
+                    ForEach(0..<5, id: \.self) { _ in SkeletonCell() }
+                        .listRowSeparator(.hidden)
                 } else if viewModel.selectedTab == 0 {
-                    ForEach(viewModel.users) { user in
-                        UserCell(user: user)
-                    }
-                    .onDelete(perform: viewModel.deleteUsers)
+                    ForEach(viewModel.users) { user in UserCell(user: user) }
+                        .onDelete(perform: viewModel.deleteUsers)
                 } else {
                     ForEach(viewModel.tasks) { task in
                         ProductCell(product: task)
@@ -88,11 +87,76 @@ private extension HomeView {
             AddEmployeeSheet(viewModel: viewModel)
         }
     }
+}
 
-    func loadData() async {
-        await viewModel.loadData()
+// MARK: - Worker view
+
+private extension HomeView {
+    var workerView: some View {
+        Group {
+            if !viewModel.consentGiven {
+                consentView
+            } else {
+                workerTaskList
+            }
+        }
+    }
+
+    var workerTaskList: some View {
+        List {
+            if viewModel.isLoading {
+                ForEach(0..<5, id: \.self) { _ in SkeletonCell() }
+                    .listRowSeparator(.hidden)
+            } else if viewModel.tasks.isEmpty {
+                ContentUnavailableView("Немає задач", systemImage: "checkmark.circle",
+                    description: Text("Керівники ще не призначили вам задач"))
+            } else {
+                ForEach(viewModel.tasks) { task in
+                    ProductCell(product: task)
+                        .contentShape(Rectangle())
+                        .onTapGesture { viewModel.toggleTaskCompleted(task) }
+                }
+            }
+        }
+        .listStyle(.plain)
+        .animation(.default, value: viewModel.isLoading)
+    }
+
+    var consentView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Image(systemName: "person.crop.circle.badge.checkmark")
+                .font(.system(size: 72))
+                .foregroundStyle(Color.appTheme.accent)
+
+            VStack(spacing: 8) {
+                Text("Надайте згоду")
+                    .font(.title2.bold())
+                Text("Щоб керівники могли призначати вам задачі, потрібна ваша одноразова згода.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.appTheme.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+
+            Button(action: viewModel.grantConsent) {
+                Text("Надати згоду")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.appTheme.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 32)
+
+            Spacer()
+        }
     }
 }
+
+// MARK: - Add Employee Sheet
 
 private struct AddEmployeeSheet: View {
     @ObservedObject var viewModel: HomeViewModel
@@ -101,11 +165,7 @@ private struct AddEmployeeSheet: View {
         NavigationStack {
             List {
                 if viewModel.isSearching {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
+                    HStack { Spacer(); ProgressView(); Spacer() }
                 } else if viewModel.searchResults.isEmpty && !viewModel.searchQuery.isEmpty {
                     Text("Нікого не знайдено")
                         .foregroundStyle(Color.appTheme.secondaryText)
@@ -143,23 +203,9 @@ private struct AddEmployeeSheet: View {
         }
     }
 }
+
 #Preview {
     NavigationStack {
-        HomeView()
-            .injectMockData()
+        HomeView().injectMockData()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

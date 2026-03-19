@@ -47,6 +47,10 @@ final class LocalDataStore: DataStoreProtocol {
         return tasks
     }
 
+    func getAssignedTasks() async throws -> [PTask] {
+        return tasks
+    }
+
     func addTask(_ task: PTask) async throws {
         tasks.append(task)
     }

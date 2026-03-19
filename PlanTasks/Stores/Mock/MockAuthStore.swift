@@ -16,12 +16,10 @@ final class MockAuthStore: AuthStoreProtocol {
         return user
     }
 
-    func sendPhoneVerification(phoneNumber: String) async throws -> String {
-        return "mock-verification-id"
-    }
+    func sendPhoneVerification(phoneNumber: String) async throws -> String { "mock-id" }
 
     func signInWithPhone(verificationID: String, code: String) async throws -> AppUser {
-        let user = AppUser(id: UUID().uuidString, email: "", displayName: "Phone User")
+        let user = AppUser(id: UUID().uuidString, email: "", displayName: nil, phoneNumber: "+380991234567")
         currentUser = user
         return user
     }
@@ -34,8 +32,15 @@ final class MockAuthStore: AuthStoreProtocol {
     }
 
     func updateDisplayName(_ name: String) async throws {
-        guard let user = currentUser else { return }
-        currentUser = AppUser(id: user.id, email: user.email, displayName: name, phoneNumber: user.phoneNumber)
+        currentUser?.displayName = name
+    }
+
+    func updateRole(_ role: UserRole) async throws {
+        currentUser?.role = role
+    }
+
+    func grantConsent() async throws {
+        currentUser?.consentGiven = true
     }
 
     func signOut() throws {
