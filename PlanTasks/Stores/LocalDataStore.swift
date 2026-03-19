@@ -61,4 +61,13 @@ final class LocalDataStore: DataStoreProtocol {
     func deleteTask(_ task: PTask) async throws {
         tasks.removeAll { $0.id == task.id }
     }
+
+    func searchRegisteredUsers(query: String) async throws -> [User] {
+        // LocalDataStore searches only among already-saved users (no global registry)
+        let all = try await getAllUsers()
+        let lower = query.lowercased()
+        return all.filter {
+            $0.name.lowercased().contains(lower) || $0.email.lowercased().contains(lower)
+        }
+    }
 }

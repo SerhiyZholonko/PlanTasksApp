@@ -47,7 +47,7 @@ final class FirebaseAuthStore: AuthStoreProtocol {
         authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
             Task { @MainActor [weak self] in
                 self?.currentUser = firebaseUser.map {
-                    AppUser(id: $0.uid, email: $0.email ?? "", displayName: $0.displayName)
+                    AppUser(id: $0.uid, email: $0.email ?? "", displayName: $0.displayName, phoneNumber: $0.phoneNumber)
                 }
             }
         }
@@ -57,19 +57,6 @@ final class FirebaseAuthStore: AuthStoreProtocol {
         if let handle = authStateHandle {
             Auth.auth().removeStateDidChangeListener(handle)
         }
-    }
-
-    func signIn(email: String, password: String) async throws -> AppUser {
-        let result = try await Auth.auth().signIn(withEmail: email, password: password)
-        return AppUser(id: result.user.uid, email: result.user.email ?? "", displayName: result.user.displayName)
-    }
-
-    func signUp(email: String, password: String, displayName: String) async throws -> AppUser {
-        let result = try await Auth.auth().createUser(withEmail: email, password: password)
-        let changeRequest = result.user.createProfileChangeRequest()
-        changeRequest.displayName = displayName
-        try await changeRequest.commitChanges()
-        return AppUser(id: result.user.uid, email: result.user.email ?? "", displayName: displayName)
     }
 
     func signInWithGoogle() async throws -> AppUser {
@@ -123,7 +110,8 @@ final class FirebaseAuthStore: AuthStoreProtocol {
         return AppUser(
             id: authResult.user.uid,
             email: authResult.user.email ?? "",
-            displayName: authResult.user.displayName
+            displayName: authResult.user.displayName,
+            phoneNumber: authResult.user.phoneNumber
         )
     }
 
@@ -139,6 +127,14 @@ final class FirebaseAuthStore: AuthStoreProtocol {
             email: authResult.user.email ?? "",
             displayName: authResult.user.displayName
         )
+    }
+
+    func updateDisplayName(_ name: String) async throws {
+        guard let user = Auth.auth().currentUser else { throw AppError.unknown }
+        let request = user.createProfileChangeRequest()
+        request.displayName = name
+        try await request.commitChanges()
+        currentUser = AppUser(id: user.uid, email: user.email ?? "", displayName: name, phoneNumber: user.phoneNumber)
     }
 
     func signOut() throws {

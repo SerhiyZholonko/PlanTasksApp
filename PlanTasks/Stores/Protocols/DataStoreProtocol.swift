@@ -7,6 +7,7 @@ protocol DataStoreProtocol: AnyObject {
     func addUser(_ user: User) async throws
     func updateUser(_ user: User) async throws
     func deleteUser(_ user: User) async throws
+    func searchRegisteredUsers(query: String) async throws -> [User]
     
     func getAllTasks() async throws -> [PTask]
     func addTask(_ task: PTask) async throws

@@ -47,6 +47,17 @@ All semantic colors are defined in `Colors.xcassets` and accessed via `Color.app
 - **Factory 2.5.3** — DI container (`@Injected(\.dataStore)`, `@Injected(\.authStore)`)
 - **Firebase 12.10.0** — FirebaseCore, FirebaseAuth, FirebaseFirestore, FirebaseDatabase, FirebaseAnalytics
 
-## Firebase Status
+## Auth Methods
 
-`FirebaseApp.configure()` is called in `AppDelegate`. `GoogleService-Info.plist` is present. `FirebaseAuthStore` is fully integrated — it listens to Firebase Auth state changes and publishes `currentUser`. Firestore is imported but **not yet used** — Tasks and Users are backed by `MockDataStore`. The next steps are implementing a `FirebaseDataStore` (replacing `MockDataStore`) and wiring up Firestore CRUD for `User` and `PTask`.
+`AuthStoreProtocol` defines four sign-in methods, all implemented in `FirebaseAuthStore`:
+
+- **Email/password** — `signIn` / `signUp` (with display name commit via `createProfileChangeRequest`)
+- **Google** — `signInWithGoogle()` uses `GIDSignIn.sharedInstance.signIn(withPresenting:)` then exchanges the ID token for a Firebase credential
+- **Apple** — `signInWithApple(idToken:rawNonce:fullName:)` called from `AuthViewModel` after `ASAuthorizationAppleIDRequest` nonce setup (SHA-256 hashed)
+- **Phone** — two-step: `sendPhoneVerification(phoneNumber:)` → `signInWithPhone(verificationID:code:)`. Uses `PhoneAuthUIDelegate` (internal) as reCAPTCHA fallback when APNs are unavailable. UI state is tracked via `PhoneAuthStep` enum (`.enterPhone` / `.enterCode(verificationID:)`).
+
+`MockAuthStore` stubs all methods for SwiftUI Previews.
+
+## Firebase / Data Status
+
+`FirebaseApp.configure()` is called in `AppDelegate`. `GoogleService-Info.plist` is present. Auth is fully implemented. Firestore is imported but **not yet used** — Tasks and Users are backed by `MockDataStore`. The next step is implementing a `FirebaseDataStore` (replacing `MockDataStore`) and wiring up Firestore CRUD for `User` and `PTask`.

@@ -2,7 +2,16 @@ import Foundation
 
 @MainActor
 final class MockDataStore: DataStoreProtocol {
-    
+
+    // Глобальний реєстр усіх зареєстрованих користувачів (імітує Firestore users/)
+    private let allRegisteredUsers: [User] = User.mockUsers + [
+        User(id: UUID(), name: "Андрій Мороз", email: "andriy@mail.com", avatarInitials: "АМ"),
+        User(id: UUID(), name: "Оксана Гриценко", email: "oksana@mail.com", avatarInitials: "ОГ"),
+        User(id: UUID(), name: "Тарас Кравченко", email: "taras@mail.com", avatarInitials: "ТК"),
+        User(id: UUID(), name: "Юлія Савченко", email: "yulia@mail.com", avatarInitials: "ЮС"),
+        User(id: UUID(), name: "Богдан Руденко", email: "bohdan@mail.com", avatarInitials: "БР"),
+    ]
+
     var mockUsers: [User] = User.mockUsers
     var mockTasks: [PTask] = PTask.mockProducts
     
@@ -31,5 +40,13 @@ final class MockDataStore: DataStoreProtocol {
     }
     func deleteUser(_ item: User) async throws {
         mockUsers.removeAll(where: { element in element.id == item.id })
+    }
+
+    func searchRegisteredUsers(query: String) async throws -> [User] {
+        let lower = query.lowercased()
+        return allRegisteredUsers.filter { user in
+            user.name.lowercased().contains(lower) ||
+            user.email.lowercased().contains(lower)
+        }
     }
 }

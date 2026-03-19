@@ -35,12 +35,21 @@ struct HomeView: View {
         .navigationTitle("PlanTasks")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(destination: ProfileView()) {
-                    Image(systemName: "person.circle")
-                        .font(.title3)
+                HStack {
+                    if viewModel.selectedTab == 0 {
+                        Button {
+                            viewModel.showAddEmployee = true
+                        } label: {
+                            Image(systemName: "person.badge.plus")
+                                .font(.title3)
+                        }
+                    }
+                    NavigationLink(destination: ProfileView()) {
+                        Image(systemName: "person.circle")
+                            .font(.title3)
+                    }
                 }
             }
-
         }
     }
 }
@@ -65,6 +74,7 @@ private extension HomeView {
                     ForEach(viewModel.users) { user in
                         UserCell(user: user)
                     }
+                    .onDelete(perform: viewModel.deleteUsers)
                 } else {
                     ForEach(viewModel.tasks) { task in
                         ProductCell(product: task)
@@ -74,10 +84,63 @@ private extension HomeView {
             .listStyle(.plain)
             .animation(.default, value: viewModel.isLoading)
         }
+        .sheet(isPresented: $viewModel.showAddEmployee) {
+            AddEmployeeSheet(viewModel: viewModel)
+        }
     }
 
     func loadData() async {
         await viewModel.loadData()
+    }
+}
+
+private struct AddEmployeeSheet: View {
+    @ObservedObject var viewModel: HomeViewModel
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if viewModel.isSearching {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                } else if viewModel.searchResults.isEmpty && !viewModel.searchQuery.isEmpty {
+                    Text("Нікого не знайдено")
+                        .foregroundStyle(Color.appTheme.secondaryText)
+                } else {
+                    ForEach(viewModel.searchResults) { user in
+                        HStack {
+                            UserCell(user: user)
+                            Spacer()
+                            Button {
+                                viewModel.addEmployee(user)
+                            } label: {
+                                Image(systemName: "person.badge.plus")
+                                    .foregroundStyle(Color.appTheme.accent)
+                                    .font(.title3)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .searchable(text: $viewModel.searchQuery, prompt: "Ім'я або пошта")
+            .onChange(of: viewModel.searchQuery) { viewModel.searchEmployees() }
+            .navigationTitle("Додати співробітника")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Закрити") {
+                        viewModel.showAddEmployee = false
+                        viewModel.searchQuery = ""
+                        viewModel.searchResults = []
+                    }
+                }
+            }
+        }
     }
 }
 #Preview {

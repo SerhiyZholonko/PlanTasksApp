@@ -21,12 +21,22 @@ struct ProfileView: View {
                             Text(name)
                                 .font(.headline)
                         }
-                        Text(viewModel.user?.email ?? "")
+                        Text(viewModel.userIdentifier)
                             .font(.subheadline)
                             .foregroundStyle(Color.appTheme.secondaryText)
                     }
                 }
                 .padding(.vertical, 8)
+
+                if viewModel.user?.displayName == nil || viewModel.user?.displayName?.isEmpty == true {
+                    Button(action: viewModel.openNameSheet) {
+                        Label("Додати ім'я", systemImage: "person.crop.circle.badge.plus")
+                    }
+                } else {
+                    Button(action: viewModel.openNameSheet) {
+                        Label("Змінити ім'я", systemImage: "pencil")
+                    }
+                }
             }
 
             Section {
@@ -37,6 +47,35 @@ struct ProfileView: View {
         }
         .navigationTitle("Профіль")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $viewModel.showNameSheet) {
+            NameEditSheet(viewModel: viewModel)
+        }
+        .showError(item: $viewModel.error)
+    }
+}
+
+private struct NameEditSheet: View {
+    @ObservedObject var viewModel: ProfileViewModel
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("Ваше ім'я", text: $viewModel.editingName)
+                    .textContentType(.name)
+                    .autocorrectionDisabled()
+            }
+            .navigationTitle("Ім'я")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Скасувати") { viewModel.showNameSheet = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Зберегти", action: viewModel.saveName)
+                        .disabled(viewModel.editingName.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
     }
 }
 

@@ -17,9 +17,14 @@ final class HomeViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable 
     @Published var showMessage = false
     @Published var showSettings = false
 
+    // MARK: - Employee search
+    @Published var showAddEmployee = false
+    @Published var searchQuery = ""
+    @Published var searchResults: [User] = []
+    @Published var isSearching = false
 
     @Injected(\.dataStore) private var store
-    
+
     init() {
         loadData()
     }
@@ -33,8 +38,6 @@ final class HomeViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable 
         }
     }
 
-
-
     func deleteUsers(at offsets: IndexSet) {
         let itemsToDelete = offsets.map { index in self.users[index] }
         Task(handlingError: self) {
@@ -42,6 +45,30 @@ final class HomeViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable 
                 try await self.store.deleteUser(item)
             }
             self.users = try await self.store.getAllUsers()
+        }
+    }
+
+    func searchEmployees() {
+        let query = searchQuery.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else {
+            searchResults = []
+            return
+        }
+        Task(handlingError: self) {
+            self.isSearching = true
+            defer { self.isSearching = false }
+            let results = try await self.store.searchRegisteredUsers(query: query)
+            self.searchResults = results.filter { found in
+                !self.users.contains(where: { $0.id == found.id })
+            }
+        }
+    }
+
+    func addEmployee(_ user: User) {
+        Task(handlingError: self) {
+            try await self.store.addUser(user)
+            self.users = try await self.store.getAllUsers()
+            self.searchResults.removeAll { $0.id == user.id }
         }
     }
 }

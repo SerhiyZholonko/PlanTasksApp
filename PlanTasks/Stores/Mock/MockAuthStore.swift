@@ -10,18 +10,6 @@ final class MockAuthStore: AuthStoreProtocol {
         $currentUser.eraseToAnyPublisher()
     }
 
-    func signIn(email: String, password: String) async throws -> AppUser {
-        let user = AppUser(id: UUID().uuidString, email: email, displayName: nil)
-        currentUser = user
-        return user
-    }
-
-    func signUp(email: String, password: String, displayName: String) async throws -> AppUser {
-        let user = AppUser(id: UUID().uuidString, email: email, displayName: displayName)
-        currentUser = user
-        return user
-    }
-
     func signInWithGoogle() async throws -> AppUser {
         let user = AppUser(id: UUID().uuidString, email: "google@mock.com", displayName: "Google User")
         currentUser = user
@@ -43,6 +31,11 @@ final class MockAuthStore: AuthStoreProtocol {
         let user = AppUser(id: UUID().uuidString, email: "apple@mock.com", displayName: name.isEmpty ? "Apple User" : name)
         currentUser = user
         return user
+    }
+
+    func updateDisplayName(_ name: String) async throws {
+        guard let user = currentUser else { return }
+        currentUser = AppUser(id: user.id, email: user.email, displayName: name, phoneNumber: user.phoneNumber)
     }
 
     func signOut() throws {

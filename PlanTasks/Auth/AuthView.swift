@@ -6,64 +6,23 @@ struct AuthView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
+            VStack(spacing: 16) {
                 Spacer()
 
                 Image(systemName: "checkmark.seal.fill")
                     .font(.system(size: 64))
                     .foregroundStyle(Color.appTheme.accent)
 
-                Text(viewModel.authType == .signIn ? "Sign In" : "Create Account")
+                Text("Увійти")
                     .font(.largeTitle.bold())
 
-                VStack(spacing: 16) {
-                    if viewModel.authType == .signUp {
-                        TextField("Display name", text: $viewModel.displayName)
-                            .textFieldStyle(.roundedBorder)
-                            .textContentType(.name)
-                    }
-
-                    TextField("Email", text: $viewModel.email)
-                        .textFieldStyle(.roundedBorder)
-                        .textContentType(.emailAddress)
-                        .keyboardType(.emailAddress)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-
-                    SecureField("Password", text: $viewModel.password)
-                        .textFieldStyle(.roundedBorder)
-                        .textContentType(viewModel.authType == .signUp ? .newPassword : .password)
-                }
-                .padding(.horizontal)
-
-                Button(action: viewModel.submit) {
-                    if viewModel.isLoading {
-                        ProgressView().tint(.white)
-                    } else {
-                        Text(viewModel.authType == .signIn ? "Sign In" : "Sign Up")
-                            .fontWeight(.semibold)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.appTheme.accent)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
-                .disabled(viewModel.isLoading || !viewModel.isFormValid)
-
-                HStack {
-                    Rectangle().frame(height: 1).foregroundStyle(Color.appTheme.divider)
-                    Text("or").font(.subheadline).foregroundStyle(Color.appTheme.secondaryText)
-                    Rectangle().frame(height: 1).foregroundStyle(Color.appTheme.divider)
-                }
-                .padding(.horizontal)
+                Spacer().frame(height: 8)
 
                 Button(action: viewModel.signInWithGoogle) {
                     HStack(spacing: 10) {
                         Image(systemName: "globe")
                             .font(.system(size: 18, weight: .medium))
-                        Text("Continue with Google")
+                        Text("Продовжити з Google")
                             .fontWeight(.medium)
                     }
                     .frame(maxWidth: .infinity)
@@ -93,7 +52,7 @@ struct AuthView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "phone.fill")
                             .font(.system(size: 16, weight: .medium))
-                        Text("Continue with Phone")
+                        Text("Продовжити з телефоном")
                             .fontWeight(.medium)
                     }
                     .frame(maxWidth: .infinity)
@@ -108,14 +67,6 @@ struct AuthView: View {
                 }
                 .padding(.horizontal)
                 .disabled(viewModel.isLoading)
-
-                Button(action: viewModel.toggleAuthType) {
-                    Text(viewModel.authType == .signIn
-                         ? "Don't have an account? Sign Up"
-                         : "Already have an account? Sign In")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.appTheme.accent)
-                }
 
                 Spacer()
             }
