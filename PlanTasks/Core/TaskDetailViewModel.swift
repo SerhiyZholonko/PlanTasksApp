@@ -16,17 +16,35 @@ final class TaskDetailViewModel: ObservableObject, ErrorDisplayable {
     @Published var isEditing = false
     @Published var editedTitle: String
     @Published var editedDeadline: Date
+    @Published var editedEmployees: Set<User> = []
+    @Published var allEmployees: [User] = []
 
     let isManager: Bool
+    var onTaskUpdated: ((PTask) -> Void)?
 
     @Injected(\.dataStore) private var store
     @Injected(\.authStore) private var authStore
 
-    init(task: PTask, isManager: Bool) {
+    init(task: PTask, isManager: Bool, onTaskUpdated: ((PTask) -> Void)? = nil) {
         self.task = task
         self.isManager = isManager
         self.editedTitle = task.title
         self.editedDeadline = task.deadline
+        self.onTaskUpdated = onTaskUpdated
+    }
+
+    func loadEmployees() {
+        Task(handlingError: self) {
+            self.allEmployees = try await self.store.getAllUsers()
+        }
+    }
+
+    func toggleEmployee(_ user: User) {
+        if editedEmployees.contains(user) {
+            editedEmployees.remove(user)
+        } else {
+            editedEmployees.insert(user)
+        }
     }
 
     func loadComments() {
@@ -63,6 +81,7 @@ final class TaskDetailViewModel: ObservableObject, ErrorDisplayable {
             updated.isCompleted.toggle()
             try await self.store.updateTask(updated)
             self.task = updated
+            self.onTaskUpdated?(updated)
         }
     }
 
@@ -76,15 +95,18 @@ final class TaskDetailViewModel: ObservableObject, ErrorDisplayable {
             var updated = self.task
             updated.title = title
             updated.deadline = self.editedDeadline
+            updated.employees = Array(self.editedEmployees)
             try await self.store.updateTask(updated)
             self.task = updated
             self.isEditing = false
+            self.onTaskUpdated?(updated)
         }
     }
 
     func cancelEditing() {
         editedTitle = task.title
         editedDeadline = task.deadline
+        editedEmployees = Set(task.employees)
         isEditing = false
     }
 }

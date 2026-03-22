@@ -77,7 +77,7 @@ private extension HomeView {
                 } else {
                     ForEach(viewModel.tasks) { task in
                         NavigationLink(destination: TaskDetailView(
-                            viewModel: TaskDetailViewModel(task: task, isManager: viewModel.isManager)
+                            viewModel: TaskDetailViewModel(task: task, isManager: viewModel.isManager, onTaskUpdated: viewModel.updateTask)
                         )) {
                             ProductCell(product: task)
                         }
@@ -118,7 +118,7 @@ private extension HomeView {
             } else {
                 ForEach(viewModel.tasks) { task in
                     NavigationLink(destination: TaskDetailView(
-                        viewModel: TaskDetailViewModel(task: task, isManager: viewModel.isManager)
+                        viewModel: TaskDetailViewModel(task: task, isManager: viewModel.isManager, onTaskUpdated: viewModel.updateTask)
                     )) {
                         ProductCell(product: task)
                     }

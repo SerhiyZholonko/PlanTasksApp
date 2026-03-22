@@ -5,7 +5,7 @@ struct PTask: Identifiable, Codable, Equatable {
     var title: String
     var deadline: Date
     var isCompleted: Bool
-    let employees: [User]
+    var employees: [User]
 }
 
 extension PTask {

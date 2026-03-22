@@ -77,9 +77,9 @@ struct ExpandableFABView: View {
                     .foregroundColor(.white)
                     .rotationEffect(.degrees(isExpanded ? 45 : 0))
                     .frame(width: 64, height: 64)
-                    .background(isExpanded ? Color.red : Color.indigo)
+                    .background(isExpanded ? Color.red : Color.accent)
                     .clipShape(Circle())
-                    .shadow(color: (isExpanded ? Color.red : Color.indigo).opacity(0.5), radius: 12, y: 6)
+                    .shadow(color: (isExpanded ? Color.red : Color.accent).opacity(0.5), radius: 12, y: 6)
             }
             .matchedGeometryEffect(id: "fab", in: namespace)
         }

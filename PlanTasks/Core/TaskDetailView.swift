@@ -19,7 +19,10 @@ struct TaskDetailView: View {
         .navigationTitle(viewModel.isEditing ? "Редагування" : viewModel.task.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
-        .onAppear { viewModel.loadComments() }
+        .onAppear {
+            viewModel.loadComments()
+            viewModel.loadEmployees()
+        }
         .showError(item: $viewModel.error)
     }
 }
@@ -108,32 +111,85 @@ private extension TaskDetailView {
                 .font(.subheadline.bold())
                 .foregroundStyle(Color.appTheme.secondaryText)
 
-            ForEach(viewModel.task.employees) { employee in
-                HStack(spacing: 10) {
-                    Circle()
-                        .fill(Color.appTheme.accent)
-                        .frame(width: 36, height: 36)
-                        .overlay {
-                            Text(employee.avatarInitials)
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundStyle(.white)
-                        }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(employee.name)
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(Color.appTheme.text)
-                        if !employee.email.isEmpty {
-                            Text(employee.email)
-                                .font(.caption)
-                                .foregroundStyle(Color.appTheme.secondaryText)
-                        }
-                    }
-                }
+            if viewModel.isEditing {
+                employeePickerList
+            } else {
+                employeeReadOnlyList
             }
         }
         .padding()
         .background(Color.appTheme.cellBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    var employeeReadOnlyList: some View {
+        ForEach(viewModel.task.employees) { employee in
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(Color.appTheme.accent)
+                    .frame(width: 36, height: 36)
+                    .overlay {
+                        Text(employee.avatarInitials)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(employee.name)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(Color.appTheme.text)
+                    if !employee.email.isEmpty {
+                        Text(employee.email)
+                            .font(.caption)
+                            .foregroundStyle(Color.appTheme.secondaryText)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    var employeePickerList: some View {
+        if viewModel.allEmployees.isEmpty {
+            Text("Немає доданих співробітників")
+                .font(.subheadline)
+                .foregroundStyle(Color.appTheme.secondaryText)
+                .padding(.vertical, 4)
+        } else {
+            ForEach(viewModel.allEmployees) { employee in
+                let isSelected = viewModel.editedEmployees.contains(employee)
+                Button {
+                    viewModel.toggleEmployee(employee)
+                } label: {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(isSelected ? Color.appTheme.accent : Color.appTheme.viewBackground)
+                            .frame(width: 36, height: 36)
+                            .overlay {
+                                Text(employee.avatarInitials)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(isSelected ? .white : Color.appTheme.text)
+                            }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(employee.name)
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(Color.appTheme.text)
+                            if !employee.email.isEmpty {
+                                Text(employee.email)
+                                    .font(.caption)
+                                    .foregroundStyle(Color.appTheme.secondaryText)
+                            }
+                        }
+                        Spacer()
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(isSelected ? Color.appTheme.accent : Color.appTheme.secondaryText)
+                            .font(.title3)
+                    }
+                    .padding(.vertical, 2)
+                }
+                .buttonStyle(.plain)
+                Divider()
+            }
+        }
     }
 }
 
@@ -205,6 +261,7 @@ private extension TaskDetailView {
                     Button {
                         viewModel.editedTitle = viewModel.task.title
                         viewModel.editedDeadline = viewModel.task.deadline
+                        viewModel.editedEmployees = Set(viewModel.task.employees)
                         viewModel.isEditing = true
                     } label: {
                         Image(systemName: "pencil")

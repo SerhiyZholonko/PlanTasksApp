@@ -67,6 +67,12 @@ final class HomeViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable 
         }
     }
 
+    func updateTask(_ task: PTask) {
+        if let i = tasks.firstIndex(where: { $0.id == task.id }) {
+            tasks[i] = task
+        }
+    }
+
     func toggleTaskCompleted(_ task: PTask) {
         Task(handlingError: self) {
             var updated = task
