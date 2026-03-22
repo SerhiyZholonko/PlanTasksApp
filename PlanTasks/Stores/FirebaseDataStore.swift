@@ -94,6 +94,23 @@ final class FirebaseDataStore: DataStoreProtocol {
     func deleteTask(_ task: PTask) async throws {
         try await db.collection("tasks").document(task.id).delete()
     }
+
+    // MARK: - Comments
+
+    private func commentsRef(taskId: String) -> CollectionReference {
+        db.collection("tasks").document(taskId).collection("comments")
+    }
+
+    func getComments(taskId: String) async throws -> [TaskComment] {
+        let snapshot = try await commentsRef(taskId: taskId)
+            .order(by: "createdAt", descending: false)
+            .getDocuments()
+        return snapshot.documents.compactMap { TaskComment(document: $0) }
+    }
+
+    func addComment(_ comment: TaskComment, taskId: String) async throws {
+        try await commentsRef(taskId: taskId).document(comment.id).setData(comment.firestoreData)
+    }
 }
 
 // MARK: - Firestore mapping: User
@@ -115,6 +132,26 @@ extension User {
     var firestoreData: [String: Any] {
         ["id": id, "name": name, "email": email, "phoneNumber": phoneNumber,
          "avatarInitials": avatarInitials, "consentGiven": consentGiven]
+    }
+}
+
+// MARK: - Firestore mapping: TaskComment
+
+extension TaskComment {
+    init?(document: QueryDocumentSnapshot) {
+        let d = document.data()
+        guard let id = d["id"] as? String,
+              let authorId = d["authorId"] as? String,
+              let authorName = d["authorName"] as? String,
+              let text = d["text"] as? String,
+              let ts = d["createdAt"] as? Timestamp else { return nil }
+        self.init(id: id, authorId: authorId, authorName: authorName,
+                  text: text, createdAt: ts.dateValue())
+    }
+
+    var firestoreData: [String: Any] {
+        ["id": id, "authorId": authorId, "authorName": authorName,
+         "text": text, "createdAt": Timestamp(date: createdAt)]
     }
 }
 

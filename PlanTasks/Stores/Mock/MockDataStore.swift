@@ -37,6 +37,19 @@ final class MockDataStore: DataStoreProtocol {
         mockUsers.removeAll { $0.id == item.id }
     }
 
+    // MARK: - Comments
+
+    private var mockComments: [String: [TaskComment]] = [:]
+
+    func getComments(taskId: String) async throws -> [TaskComment] {
+        mockComments[taskId] ?? TaskComment.mock
+    }
+
+    func addComment(_ comment: TaskComment, taskId: String) async throws {
+        if mockComments[taskId] == nil { mockComments[taskId] = TaskComment.mock }
+        mockComments[taskId]?.append(comment)
+    }
+
     func searchRegisteredUsers(query: String) async throws -> [User] {
         let lower = query.lowercased()
         return allRegisteredUsers.filter {

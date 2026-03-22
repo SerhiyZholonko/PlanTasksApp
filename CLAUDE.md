@@ -20,7 +20,7 @@ MVVM with Factory dependency injection, organized in three layers:
 
 **Presentation** (`Core/`) — SwiftUI views + `@MainActor`-isolated `ObservableObject` ViewModels. Each ViewModel conforms to `ErrorDisplayable` and/or `AlertDisplayable` protocols, and exposes `error: Error?` / `alert: AppAlert?` which views bind to via `.showError(item:)` / `.showAlert(item:)` view modifiers. Async operations are wrapped with `Task(handlingError: self) { ... }` which auto-assigns thrown errors to `self.error`.
 
-**Domain** (`Domain/`) — Plain Swift models (`AppUser`, `User`, `PTask`, `Home`, `AppAlert`, `AppError`, `AppState`, `AuthType`) and protocols (`DataStoreProtocol`, `AuthStoreProtocol`, `ErrorDisplayable`, `AlertDisplayable`).
+**Domain** (`Domain/`) — Plain Swift models (`AppUser`, `User`, `PTask`, `Home`, `AppAlert`, `AppError`, `AppState`, `AuthType`, `UserRole`) and protocols (`DataStoreProtocol`, `AuthStoreProtocol`, `ErrorDisplayable`, `AlertDisplayable`).
 
 **Data** (`Stores/`) — Two protocol abstractions:
 - `DataStoreProtocol` — CRUD for `User` and `PTask`. `MockDataStore` uses in-memory arrays (pre-populated with 5 Ukrainian-named users/tasks). `LocalDataStore` persists Users to UserDefaults (key `"Home_storage"`); Tasks are in-memory only.
@@ -30,7 +30,7 @@ MVVM with Factory dependency injection, organized in three layers:
 
 Factory container is extended in `Extensions/Container+Registration.swift`. Currently:
 - `authStore` → `FirebaseAuthStore` (singleton)
-- `dataStore` → `MockDataStore` (singleton)
+- `dataStore` → `FirebaseDataStore` (singleton)
 
 To swap implementations change the factory closures here. In SwiftUI Previews use `.injectMockData()` view modifier.
 

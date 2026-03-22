@@ -2,8 +2,8 @@ import Foundation
 
 struct PTask: Identifiable, Codable, Equatable {
     let id: String
-    let title: String
-    let deadline: Date
+    var title: String
+    var deadline: Date
     var isCompleted: Bool
     let employees: [User]
 }

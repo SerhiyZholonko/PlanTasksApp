@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xcodebuild -project PlanTasks.xcodeproj -scheme PlanTasks -destination 'platform=iOS Simulator,name=iPhone 15' build)",
+      "Bash(xcodebuild -project /Users/apple/Documents/gitHub/PlanTasksApp/PlanTasks.xcodeproj -scheme PlanTasks -destination 'platform=iOS Simulator,name=iPhone 16' build)",
+      "Bash(xcrun simctl:*)",
+      "Bash(xcodebuild -project /Users/apple/Documents/gitHub/PlanTasksApp/PlanTasks.xcodeproj -scheme PlanTasks -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build)"
+    ]
+  }
+}

@@ -14,4 +14,7 @@ protocol DataStoreProtocol: AnyObject {
     func addTask(_ task: PTask) async throws
     func updateTask(_ task: PTask) async throws
     func deleteTask(_ task: PTask) async throws
+
+    func getComments(taskId: String) async throws -> [TaskComment]
+    func addComment(_ comment: TaskComment, taskId: String) async throws
 }

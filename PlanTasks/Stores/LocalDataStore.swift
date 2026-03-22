@@ -66,6 +66,19 @@ final class LocalDataStore: DataStoreProtocol {
         tasks.removeAll { $0.id == task.id }
     }
 
+    // MARK: - Comments (in-memory only)
+
+    private var comments: [String: [TaskComment]] = [:]
+
+    func getComments(taskId: String) async throws -> [TaskComment] {
+        comments[taskId] ?? []
+    }
+
+    func addComment(_ comment: TaskComment, taskId: String) async throws {
+        if comments[taskId] == nil { comments[taskId] = [] }
+        comments[taskId]?.append(comment)
+    }
+
     func searchRegisteredUsers(query: String) async throws -> [User] {
         // LocalDataStore searches only among already-saved users (no global registry)
         let all = try await getAllUsers()

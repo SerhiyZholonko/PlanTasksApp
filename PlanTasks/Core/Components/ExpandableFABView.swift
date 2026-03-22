@@ -27,7 +27,7 @@ struct ExpandableFABView: View {
         self.onSettings = onSettings
         self.menuItems = [
             ("plus.circle.fill", "Додати задачу", .green, onAddTask),
-            ("message.fill", "Надіслати повідомлення", .blue, onMessage),
+//            ("message.fill", "Надіслати повідомлення", .blue, onMessage),
             ("gearshape.fill", "Налаштування", .orange, onSettings),
         ]
     }

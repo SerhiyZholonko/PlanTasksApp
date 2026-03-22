@@ -76,7 +76,12 @@ private extension HomeView {
                         .onDelete(perform: viewModel.deleteUsers)
                 } else {
                     ForEach(viewModel.tasks) { task in
-                        ProductCell(product: task)
+                        NavigationLink(destination: TaskDetailView(
+                            viewModel: TaskDetailViewModel(task: task, isManager: viewModel.isManager)
+                        )) {
+                            ProductCell(product: task)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -112,9 +117,12 @@ private extension HomeView {
                     description: Text("Керівники ще не призначили вам задач"))
             } else {
                 ForEach(viewModel.tasks) { task in
-                    ProductCell(product: task)
-                        .contentShape(Rectangle())
-                        .onTapGesture { viewModel.toggleTaskCompleted(task) }
+                    NavigationLink(destination: TaskDetailView(
+                        viewModel: TaskDetailViewModel(task: task, isManager: viewModel.isManager)
+                    )) {
+                        ProductCell(product: task)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
